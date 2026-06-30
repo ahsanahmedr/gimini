@@ -13,11 +13,11 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   String? _activeSessionId;
 
-  static const _primary = Color(0xFF6C47FF);
-  static const _dark = Color(0xFF12132A);
-  static const _bg = Color(0xFFF4F5F9);
-  static const _sidebarBg = Color(0xFF1A1B2E);
-  static const _sidebarItem = Color(0xFF2A2B42);
+  static const _primary = Color(0xFF1D4E89);
+  static const _dark = Color(0xFF0F172A);
+  static const _bg = Color(0xFFF8FAFC);
+  static const _sidebarBg = Color(0xFF1E2E43);
+  static const _sidebarItem = Color(0xFF2A3D5A);
 
   void _startNewChat() {
   final session = ref.read(historyProvider.notifier).createSession();
@@ -118,7 +118,7 @@ Widget build(BuildContext context) {
                       Icon(Icons.add, color: Colors.white, size: 20),
                       SizedBox(width: 10),
                       Text(
-                        'New Chat',
+                        'Start Chat',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -228,7 +228,7 @@ Widget build(BuildContext context) {
           const SizedBox(height: 10),
           const Text(
             'Start a new chat or select from history',
-            style: TextStyle(color: Colors.grey, fontSize: 14),
+            style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
           ),
           const SizedBox(height: 32),
           ElevatedButton.icon(

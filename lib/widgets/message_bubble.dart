@@ -9,8 +9,8 @@ class MessageBubble extends StatelessWidget {
 
   const MessageBubble({super.key, required this.message});
 
-  static const _primary = Color(0xFF6C47FF);
-  static const _dark = Color(0xFF12132A);
+  static const _primary = Color(0xFF1D4E89);
+  static const _dark = Color(0xFF0F172A);
 
   @override
   Widget build(BuildContext context) {
@@ -62,12 +62,12 @@ class MessageBubble extends StatelessWidget {
                           p: const TextStyle(
                               color: _dark, fontSize: 15, height: 1.5),
                           code: TextStyle(
-                            backgroundColor: Colors.grey.shade100,
+                            backgroundColor: const Color(0xFFF1F5F9),
                             fontSize: 13,
                             fontFamily: 'monospace',
                           ),
                           codeblockDecoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
@@ -79,7 +79,7 @@ class MessageBubble extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               DateFormat('hh:mm a').format(message.timestamp),
-              style: TextStyle(fontSize: 10.5, color: Colors.grey.shade400),
+              style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
             ),
           ],
         ),

@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/history_provider.dart';
 
-class OnboardingScreen extends StatefulWidget {
+
+
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen>
-    with TickerProviderStateMixin {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
+  with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   
   int _currentPage = 0;
@@ -111,8 +114,8 @@ void _nextPage() {
 }
 
 Future<void> _finish() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('onboarding_seen', true);
+  final database = ref.read(appDatabaseProvider);
+  await database.setBool('onboarding_seen', true);
   if (mounted) {
     context.go('/'); // ✅ /home → /
   }

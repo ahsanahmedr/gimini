@@ -36,7 +36,7 @@ class TypingIndicator extends StatelessWidget {
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: Color(0xFF6C47FF),
+                color: Color(0xFF1D4E89),
                 shape: BoxShape.circle,
               ),
             )

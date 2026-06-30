@@ -4,6 +4,7 @@ import '../providers/chat_provider.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/typing_indicator.dart';
 import '../widgets/chat_input_bar.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String sessionId;
@@ -15,10 +16,11 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _scrollController = ScrollController();
+final SpeechToText _speech = SpeechToText();
 
-  static const _primary = Color(0xFF6C47FF);
-  static const _dark = Color(0xFF12132A);
-  static const _bg = Color(0xFFF4F5F9);
+  static const _primary = Color(0xFF1D4E89);
+  static const _dark = Color(0xFF0F172A);
+  static const _bg = Color(0xFFF8FAFC);
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -31,7 +33,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       }
     });
   }
+@override
+void initState() {
+  super.initState();
+  _initSpeech();
+}
 
+Future<void> _initSpeech() async {
+  await _speech.initialize();
+}
   @override
   void dispose() {
     _scrollController.dispose();
@@ -121,8 +131,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 }
 
 class _WelcomeHint extends StatelessWidget {
-  static const _primary = Color(0xFF6C47FF);
-  static const _muted = Color(0xFF8E92AA);
+  static const _primary = Color(0xFF1D4E89);
+  static const _muted = Color(0xFF475569);
 
   const _WelcomeHint();
 
@@ -147,7 +157,7 @@ class _WelcomeHint extends StatelessWidget {
             style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF12132A)),
+                color: Color(0xFF0F172A)),
           ),
           const SizedBox(height: 8),
           const Text(
