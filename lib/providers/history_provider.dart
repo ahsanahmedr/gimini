@@ -1,102 +1,160 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart' show Value;
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/app_database.dart' as db;
 import '../models/chat_session.dart';
 import '../models/chat_message.dart';
 
 const _uuid = Uuid();
 
-// Single shared database instance for the whole app
 final appDatabaseProvider = Provider<db.AppDatabase>((ref) {
   final database = db.AppDatabase();
   ref.onDispose(database.close);
   return database;
 });
 
-// All saved chat sessions provider (same shape as before: List<ChatSession>)
 class HistoryNotifier extends StateNotifier<List<ChatSession>> {
   final db.AppDatabase _database;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Set<String> _driftSavedSessions = {};
+
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
 
   HistoryNotifier(this._database) : super([]) {
-    _loadFromStorage(); // Load saved sessions on start
+    _loadFromStorage();
   }
 
-  // Load sessions + their messages from Drift
   Future<void> _loadFromStorage() async {
     final sessionRows = await _database.getAllSessions();
-
     final sessions = <ChatSession>[];
     for (final row in sessionRows) {
+      _driftSavedSessions.add(row.id);
       final messageRows = await _database.getMessagesForSession(row.id);
-      sessions.add(
-        ChatSession(
-          id: row.id,
-          title: row.title,
-          messages: messageRows
-              .map((m) => ChatMessage(
-                    id: m.id,
-                    text: m.content,
-                    isUser: m.isUser,
-                    timestamp: m.timestamp,
-                  ))
-              .toList(),
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt,
-        ),
-      );
+      sessions.add(ChatSession(
+        id: row.id,
+        title: row.title,
+        messages: messageRows
+            .map((m) => ChatMessage(
+                  id: m.id,
+                  text: m.content,
+                  isUser: m.isUser,
+                  timestamp: m.timestamp,
+                ))
+            .toList(),
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      ));
     }
     state = sessions;
   }
 
-  // Create a brand new chat session
-  ChatSession createSession() {
-    final now = DateTime.now();
-    final session = ChatSession(
-      id: _uuid.v4(),
-      title: 'New Chat',
-      messages: [],
-      createdAt: now,
-      updatedAt: now,
-    );
-
-    state = [session, ...state]; // Add to top of list
-
-    _database.insertSession(db.ChatSessionsCompanion.insert(
-      id: session.id,
-      title: const Value('New Chat'),
-      createdAt: now,
-      updatedAt: now,
-    ));
-
-    return session;
+  Future<void> _saveSessionToFirestore(ChatSession session) async {
+    if (_uid == null) return;
+    try {
+      await _firestore
+          .collection('users')
+          .doc(_uid)
+          .collection('sessions')
+          .doc(session.id)
+          .set({
+        'id': session.id,
+        'title': session.title,
+        'createdAt': session.createdAt.toIso8601String(),
+        'updatedAt': session.updatedAt.toIso8601String(),
+      });
+    } catch (e) {
+      debugPrint('❌ Firestore session save error: $e');
+    }
   }
 
-  // Add a message to existing session
+  Future<void> _saveMessageToFirestore(
+      String sessionId, ChatMessage message) async {
+    if (_uid == null) return;
+    try {
+      await _firestore
+          .collection('users')
+          .doc(_uid)
+          .collection('sessions')
+          .doc(sessionId)
+          .collection('messages')
+          .doc(message.id)
+          .set({
+        'id': message.id,
+        'text': message.text,
+        'isUser': message.isUser,
+        'timestamp': message.timestamp.toIso8601String(),
+      });
+    } catch (e) {
+      debugPrint('❌ Firestore message save error: $e');
+    }
+  }
+
+  // ✅ Sirf local state mein banao — Firestore/Drift mein NAHI
+  // Jab pehla message aayega tab save hoga
+// ✅ Sirf local state — Drift/Firestore mein BILKUL nahi
+ChatSession createSession() {
+  final now = DateTime.now();
+  final session = ChatSession(
+    id: _uuid.v4(),
+    title: 'New Chat',
+    messages: [],
+    createdAt: now,
+    updatedAt: now,
+  );
+  state = [session, ...state]; // sirf memory mein
+  return session;
+}
+
   void addMessage(String sessionId, ChatMessage message) {
-    state = state.map((session) {
-      if (session.id != sessionId) return session;
+  final sessionExists = state.any((s) => s.id == sessionId);
+  if (!sessionExists) return;
 
-      final updatedMessages = [...session.messages, message];
+  // Pehle check karo ke session abhi Drift mein hai ya nahi
+  final existsInDrift = _driftSavedSessions.contains(sessionId); // ← set rakhenge
 
-      // Auto set title from first user message
-      final title = session.title == 'New Chat' && message.isUser
-          ? (message.text.length > 40
-              ? '${message.text.substring(0, 40)}...'
-              : message.text)
-          : session.title;
+  state = state.map((session) {
+    if (session.id != sessionId) return session;
+    final updatedMessages = [...session.messages, message];
+    final title = session.title == 'New Chat' && message.isUser
+        ? (message.text.length > 40
+            ? '${message.text.substring(0, 40)}...'
+            : message.text)
+        : session.title;
+    return session.copyWith(
+      messages: updatedMessages,
+      title: title,
+      updatedAt: DateTime.now(),
+    );
+  }).toList();
 
-      return session.copyWith(
-        messages: updatedMessages,
-        title: title,
-        updatedAt: DateTime.now(),
-      );
-    }).toList();
+  final updatedSession = getSession(sessionId);
+  if (updatedSession == null) return;
 
-    final updatedSession = getSession(sessionId);
-    if (updatedSession == null) return;
+  if (!existsInDrift && message.isUser) {
+    // ✅ Pehli baar — Drift mein session banao
+    _driftSavedSessions.add(sessionId);
+    _database.insertSession(db.ChatSessionsCompanion.insert(
+      id: updatedSession.id,
+      title: Value(updatedSession.title),
+      createdAt: updatedSession.createdAt,
+      updatedAt: updatedSession.updatedAt,
+    ));
+    _saveSessionToFirestore(updatedSession);
+  } else if (existsInDrift) {
+    // ✅ Already saved — sirf update karo
+    _database.updateSession(db.ChatSessionsCompanion(
+      id: Value(sessionId),
+      title: Value(updatedSession.title),
+      updatedAt: Value(updatedSession.updatedAt),
+    ));
+    _saveSessionToFirestore(updatedSession);
+  }
 
+  // Message save karo (sirf agar session Drift mein ho)
+  if (_driftSavedSessions.contains(sessionId)) {
     _database.insertMessage(db.ChatMessagesCompanion.insert(
       id: message.id,
       sessionId: sessionId,
@@ -104,25 +162,18 @@ class HistoryNotifier extends StateNotifier<List<ChatSession>> {
       isUser: message.isUser,
       timestamp: message.timestamp,
     ));
-
-    _database.updateSession(db.ChatSessionsCompanion(
-      id: Value(sessionId),
-      title: Value(updatedSession.title),
-      updatedAt: Value(updatedSession.updatedAt),
-    ));
+    _saveMessageToFirestore(sessionId, message);
   }
+}
 
-  // Update bot's streaming message (append chunks)
   void updateLastBotMessage(String sessionId, String fullText) {
     String? lastMessageId;
 
     state = state.map((session) {
       if (session.id != sessionId) return session;
-
       final messages = [...session.messages];
       if (messages.isNotEmpty && !messages.last.isUser) {
         lastMessageId = messages.last.id;
-        // Replace last bot message with updated text
         messages[messages.length - 1] = ChatMessage(
           id: messages.last.id,
           text: fullText,
@@ -135,7 +186,6 @@ class HistoryNotifier extends StateNotifier<List<ChatSession>> {
 
     if (lastMessageId == null) return;
 
-    // Persist only the changed message text, avoid rewriting everything
     _database.updateMessage(db.ChatMessagesCompanion(
       id: Value(lastMessageId!),
       content: Value(fullText),
@@ -145,15 +195,36 @@ class HistoryNotifier extends StateNotifier<List<ChatSession>> {
       id: Value(sessionId),
       updatedAt: Value(DateTime.now()),
     ));
+
+    if (_uid != null) {
+      _firestore
+          .collection('users')
+          .doc(_uid)
+          .collection('sessions')
+          .doc(sessionId)
+          .collection('messages')
+          .doc(lastMessageId!)
+          .update({'text': fullText}).catchError(
+              (e) => debugPrint('Firestore message update error: $e'));
+    }
   }
 
-  // Delete a session
   void deleteSession(String sessionId) {
     state = state.where((s) => s.id != sessionId).toList();
-    _database.deleteSession(sessionId); // messages cascade-delete in DB
+
+    _database.deleteSession(sessionId);
+
+    if (_uid != null) {
+      _firestore
+          .collection('users')
+          .doc(_uid)
+          .collection('sessions')
+          .doc(sessionId)
+          .delete()
+          .catchError((e) => debugPrint('Firestore delete error: $e'));
+    }
   }
 
-  // Get single session by id
   ChatSession? getSession(String sessionId) {
     try {
       return state.firstWhere((s) => s.id == sessionId);

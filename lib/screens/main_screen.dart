@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/history_provider.dart';
 import 'chat_screen.dart';
+import '../providers/auth_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -178,6 +180,35 @@ Widget build(BuildContext context) {
                       },
                     ),
             ),
+            Padding(
+  padding: const EdgeInsets.all(12),
+  child: InkWell(
+    onTap: () async {
+      await ref.read(authServiceProvider).logout();
+      if (context.mounted) context.go('/login');
+    },
+    borderRadius: BorderRadius.circular(12),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+          SizedBox(width: 10),
+          Text('Logout',
+              style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15)),
+        ],
+      ),
+    ),
+  ),
+),
+
           ],
         ),
       ),

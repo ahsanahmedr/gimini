@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'router/app_router.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(const ProviderScope(child: MyApp())); // ek hi runApp
 }
+
+
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
+  
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +30,6 @@ class MyApp extends ConsumerWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFFF8FAFC),
         useMaterial3: true,
-        fontFamily: 'SF Pro Display',
       ),
       routerConfig: router,
     );
