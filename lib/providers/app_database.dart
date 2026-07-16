@@ -40,13 +40,34 @@ class Settings extends Table {
   Set<Column> get primaryKey => {key};
 }
 
-@DriftDatabase(tables: [ChatSessions, ChatMessages, Settings])
+class UserSettings extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get aiTone => text().withDefault(const Constant('Friendly'))();
+  TextColumn get language => text().withDefault(const Constant('English'))();
+  TextColumn get customInstruction =>
+      text().withDefault(const Constant(''))();
+
+  BoolColumn get darkMode =>
+      boolean().withDefault(const Constant(false))();
+}
+
+@DriftDatabase(
+  tables: [
+    ChatSessions,
+    ChatMessages,
+    Settings,
+    UserSettings,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
+  
   AppDatabase() : super(_openConnection());
+
 
   // Bump this whenever you change a table's columns
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   // ---------------- Session queries ----------------
 
@@ -55,6 +76,7 @@ class AppDatabase extends _$AppDatabase {
           ..orderBy([(s) => OrderingTerm.desc(s.updatedAt)]))
         .get();
   }
+  
 
   Stream<List<ChatSession>> watchAllSessions() {
     return (select(chatSessions)
@@ -71,6 +93,14 @@ class AppDatabase extends _$AppDatabase {
           ..where((s) => s.id.equals(session.id.value)))
         .write(session);
   }
+
+Future<UserSetting?> getSettings() {
+  return select(userSettings).getSingleOrNull();
+}
+
+Future<void> saveSettings(UserSettingsCompanion data) async {
+  await into(userSettings).insertOnConflictUpdate(data);
+}
 
   Future<void> deleteSession(String sessionId) {
     return (delete(chatSessions)..where((s) => s.id.equals(sessionId))).go();

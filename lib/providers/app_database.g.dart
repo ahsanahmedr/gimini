@@ -880,12 +880,366 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   }
 }
 
+class $UserSettingsTable extends UserSettings
+    with TableInfo<$UserSettingsTable, UserSetting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UserSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _aiToneMeta = const VerificationMeta('aiTone');
+  @override
+  late final GeneratedColumn<String> aiTone = GeneratedColumn<String>(
+    'ai_tone',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Friendly'),
+  );
+  static const VerificationMeta _languageMeta = const VerificationMeta(
+    'language',
+  );
+  @override
+  late final GeneratedColumn<String> language = GeneratedColumn<String>(
+    'language',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('English'),
+  );
+  static const VerificationMeta _customInstructionMeta = const VerificationMeta(
+    'customInstruction',
+  );
+  @override
+  late final GeneratedColumn<String> customInstruction =
+      GeneratedColumn<String>(
+        'custom_instruction',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
+  static const VerificationMeta _darkModeMeta = const VerificationMeta(
+    'darkMode',
+  );
+  @override
+  late final GeneratedColumn<bool> darkMode = GeneratedColumn<bool>(
+    'dark_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("dark_mode" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    aiTone,
+    language,
+    customInstruction,
+    darkMode,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'user_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<UserSetting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('ai_tone')) {
+      context.handle(
+        _aiToneMeta,
+        aiTone.isAcceptableOrUnknown(data['ai_tone']!, _aiToneMeta),
+      );
+    }
+    if (data.containsKey('language')) {
+      context.handle(
+        _languageMeta,
+        language.isAcceptableOrUnknown(data['language']!, _languageMeta),
+      );
+    }
+    if (data.containsKey('custom_instruction')) {
+      context.handle(
+        _customInstructionMeta,
+        customInstruction.isAcceptableOrUnknown(
+          data['custom_instruction']!,
+          _customInstructionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dark_mode')) {
+      context.handle(
+        _darkModeMeta,
+        darkMode.isAcceptableOrUnknown(data['dark_mode']!, _darkModeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UserSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UserSetting(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      aiTone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ai_tone'],
+      )!,
+      language: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language'],
+      )!,
+      customInstruction: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_instruction'],
+      )!,
+      darkMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}dark_mode'],
+      )!,
+    );
+  }
+
+  @override
+  $UserSettingsTable createAlias(String alias) {
+    return $UserSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class UserSetting extends DataClass implements Insertable<UserSetting> {
+  final int id;
+  final String aiTone;
+  final String language;
+  final String customInstruction;
+  final bool darkMode;
+  const UserSetting({
+    required this.id,
+    required this.aiTone,
+    required this.language,
+    required this.customInstruction,
+    required this.darkMode,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['ai_tone'] = Variable<String>(aiTone);
+    map['language'] = Variable<String>(language);
+    map['custom_instruction'] = Variable<String>(customInstruction);
+    map['dark_mode'] = Variable<bool>(darkMode);
+    return map;
+  }
+
+  UserSettingsCompanion toCompanion(bool nullToAbsent) {
+    return UserSettingsCompanion(
+      id: Value(id),
+      aiTone: Value(aiTone),
+      language: Value(language),
+      customInstruction: Value(customInstruction),
+      darkMode: Value(darkMode),
+    );
+  }
+
+  factory UserSetting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UserSetting(
+      id: serializer.fromJson<int>(json['id']),
+      aiTone: serializer.fromJson<String>(json['aiTone']),
+      language: serializer.fromJson<String>(json['language']),
+      customInstruction: serializer.fromJson<String>(json['customInstruction']),
+      darkMode: serializer.fromJson<bool>(json['darkMode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'aiTone': serializer.toJson<String>(aiTone),
+      'language': serializer.toJson<String>(language),
+      'customInstruction': serializer.toJson<String>(customInstruction),
+      'darkMode': serializer.toJson<bool>(darkMode),
+    };
+  }
+
+  UserSetting copyWith({
+    int? id,
+    String? aiTone,
+    String? language,
+    String? customInstruction,
+    bool? darkMode,
+  }) => UserSetting(
+    id: id ?? this.id,
+    aiTone: aiTone ?? this.aiTone,
+    language: language ?? this.language,
+    customInstruction: customInstruction ?? this.customInstruction,
+    darkMode: darkMode ?? this.darkMode,
+  );
+  UserSetting copyWithCompanion(UserSettingsCompanion data) {
+    return UserSetting(
+      id: data.id.present ? data.id.value : this.id,
+      aiTone: data.aiTone.present ? data.aiTone.value : this.aiTone,
+      language: data.language.present ? data.language.value : this.language,
+      customInstruction: data.customInstruction.present
+          ? data.customInstruction.value
+          : this.customInstruction,
+      darkMode: data.darkMode.present ? data.darkMode.value : this.darkMode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserSetting(')
+          ..write('id: $id, ')
+          ..write('aiTone: $aiTone, ')
+          ..write('language: $language, ')
+          ..write('customInstruction: $customInstruction, ')
+          ..write('darkMode: $darkMode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, aiTone, language, customInstruction, darkMode);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UserSetting &&
+          other.id == this.id &&
+          other.aiTone == this.aiTone &&
+          other.language == this.language &&
+          other.customInstruction == this.customInstruction &&
+          other.darkMode == this.darkMode);
+}
+
+class UserSettingsCompanion extends UpdateCompanion<UserSetting> {
+  final Value<int> id;
+  final Value<String> aiTone;
+  final Value<String> language;
+  final Value<String> customInstruction;
+  final Value<bool> darkMode;
+  const UserSettingsCompanion({
+    this.id = const Value.absent(),
+    this.aiTone = const Value.absent(),
+    this.language = const Value.absent(),
+    this.customInstruction = const Value.absent(),
+    this.darkMode = const Value.absent(),
+  });
+  UserSettingsCompanion.insert({
+    this.id = const Value.absent(),
+    this.aiTone = const Value.absent(),
+    this.language = const Value.absent(),
+    this.customInstruction = const Value.absent(),
+    this.darkMode = const Value.absent(),
+  });
+  static Insertable<UserSetting> custom({
+    Expression<int>? id,
+    Expression<String>? aiTone,
+    Expression<String>? language,
+    Expression<String>? customInstruction,
+    Expression<bool>? darkMode,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (aiTone != null) 'ai_tone': aiTone,
+      if (language != null) 'language': language,
+      if (customInstruction != null) 'custom_instruction': customInstruction,
+      if (darkMode != null) 'dark_mode': darkMode,
+    });
+  }
+
+  UserSettingsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? aiTone,
+    Value<String>? language,
+    Value<String>? customInstruction,
+    Value<bool>? darkMode,
+  }) {
+    return UserSettingsCompanion(
+      id: id ?? this.id,
+      aiTone: aiTone ?? this.aiTone,
+      language: language ?? this.language,
+      customInstruction: customInstruction ?? this.customInstruction,
+      darkMode: darkMode ?? this.darkMode,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (aiTone.present) {
+      map['ai_tone'] = Variable<String>(aiTone.value);
+    }
+    if (language.present) {
+      map['language'] = Variable<String>(language.value);
+    }
+    if (customInstruction.present) {
+      map['custom_instruction'] = Variable<String>(customInstruction.value);
+    }
+    if (darkMode.present) {
+      map['dark_mode'] = Variable<bool>(darkMode.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UserSettingsCompanion(')
+          ..write('id: $id, ')
+          ..write('aiTone: $aiTone, ')
+          ..write('language: $language, ')
+          ..write('customInstruction: $customInstruction, ')
+          ..write('darkMode: $darkMode')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ChatSessionsTable chatSessions = $ChatSessionsTable(this);
   late final $ChatMessagesTable chatMessages = $ChatMessagesTable(this);
   late final $SettingsTable settings = $SettingsTable(this);
+  late final $UserSettingsTable userSettings = $UserSettingsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -894,6 +1248,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     chatSessions,
     chatMessages,
     settings,
+    userSettings,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -1639,6 +1994,202 @@ typedef $$SettingsTableProcessedTableManager =
       Setting,
       PrefetchHooks Function()
     >;
+typedef $$UserSettingsTableCreateCompanionBuilder =
+    UserSettingsCompanion Function({
+      Value<int> id,
+      Value<String> aiTone,
+      Value<String> language,
+      Value<String> customInstruction,
+      Value<bool> darkMode,
+    });
+typedef $$UserSettingsTableUpdateCompanionBuilder =
+    UserSettingsCompanion Function({
+      Value<int> id,
+      Value<String> aiTone,
+      Value<String> language,
+      Value<String> customInstruction,
+      Value<bool> darkMode,
+    });
+
+class $$UserSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get aiTone => $composableBuilder(
+    column: $table.aiTone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customInstruction => $composableBuilder(
+    column: $table.customInstruction,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get darkMode => $composableBuilder(
+    column: $table.darkMode,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$UserSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get aiTone => $composableBuilder(
+    column: $table.aiTone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customInstruction => $composableBuilder(
+    column: $table.customInstruction,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get darkMode => $composableBuilder(
+    column: $table.darkMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$UserSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UserSettingsTable> {
+  $$UserSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get aiTone =>
+      $composableBuilder(column: $table.aiTone, builder: (column) => column);
+
+  GeneratedColumn<String> get language =>
+      $composableBuilder(column: $table.language, builder: (column) => column);
+
+  GeneratedColumn<String> get customInstruction => $composableBuilder(
+    column: $table.customInstruction,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get darkMode =>
+      $composableBuilder(column: $table.darkMode, builder: (column) => column);
+}
+
+class $$UserSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $UserSettingsTable,
+          UserSetting,
+          $$UserSettingsTableFilterComposer,
+          $$UserSettingsTableOrderingComposer,
+          $$UserSettingsTableAnnotationComposer,
+          $$UserSettingsTableCreateCompanionBuilder,
+          $$UserSettingsTableUpdateCompanionBuilder,
+          (
+            UserSetting,
+            BaseReferences<_$AppDatabase, $UserSettingsTable, UserSetting>,
+          ),
+          UserSetting,
+          PrefetchHooks Function()
+        > {
+  $$UserSettingsTableTableManager(_$AppDatabase db, $UserSettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UserSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UserSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UserSettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> aiTone = const Value.absent(),
+                Value<String> language = const Value.absent(),
+                Value<String> customInstruction = const Value.absent(),
+                Value<bool> darkMode = const Value.absent(),
+              }) => UserSettingsCompanion(
+                id: id,
+                aiTone: aiTone,
+                language: language,
+                customInstruction: customInstruction,
+                darkMode: darkMode,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> aiTone = const Value.absent(),
+                Value<String> language = const Value.absent(),
+                Value<String> customInstruction = const Value.absent(),
+                Value<bool> darkMode = const Value.absent(),
+              }) => UserSettingsCompanion.insert(
+                id: id,
+                aiTone: aiTone,
+                language: language,
+                customInstruction: customInstruction,
+                darkMode: darkMode,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$UserSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UserSettingsTable,
+      UserSetting,
+      $$UserSettingsTableFilterComposer,
+      $$UserSettingsTableOrderingComposer,
+      $$UserSettingsTableAnnotationComposer,
+      $$UserSettingsTableCreateCompanionBuilder,
+      $$UserSettingsTableUpdateCompanionBuilder,
+      (
+        UserSetting,
+        BaseReferences<_$AppDatabase, $UserSettingsTable, UserSetting>,
+      ),
+      UserSetting,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1649,4 +2200,6 @@ class $AppDatabaseManager {
       $$ChatMessagesTableTableManager(_db, _db.chatMessages);
   $$SettingsTableTableManager get settings =>
       $$SettingsTableTableManager(_db, _db.settings);
+  $$UserSettingsTableTableManager get userSettings =>
+      $$UserSettingsTableTableManager(_db, _db.userSettings);
 }

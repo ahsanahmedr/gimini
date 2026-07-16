@@ -1,11 +1,10 @@
 import 'dart:developer' as developer;
-
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../models/chat_message.dart';
 
 class GeminiService {
   // Replace with your Gemini API key from Google AI Studio
-  static const _apiKey = 'AQ.Ab8RN6I4nuQGRQ5d3xWkgmdxLO46ltRIQ8Jv0Q1Y8XLxZvdkrA';
+  static const _apiKey = 'AQ.Ab8RN6LTx6EN1wC2Vt7KnMM6TfYN8vo2hk4Mm7caECweINmyOw';
 
   late final GenerativeModel _model;
   late ChatSession _chat; // Gemini's own chat session (keeps context)
@@ -13,7 +12,7 @@ class GeminiService {
   GeminiService() {
     // Initialize Gemini model
     _model = GenerativeModel(
-      model: 'gemini-3.5-flash',
+      model: 'gemini-2.0-flash',
       apiKey: _apiKey,
       generationConfig: GenerationConfig(
         temperature: 0.8,
@@ -26,7 +25,7 @@ class GeminiService {
       ),
     );
 
-    // Start a new Gemini chat session
+    
     _chat = _model.startChat();
   }
 

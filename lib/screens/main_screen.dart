@@ -185,7 +185,8 @@ Widget build(BuildContext context) {
   child: InkWell(
     onTap: () async {
       await ref.read(authServiceProvider).logout();
-      if (context.mounted) context.go('/login');
+      if (!mounted) return;
+      context.go('/login');
     },
     borderRadius: BorderRadius.circular(12),
     child: Container(
@@ -221,10 +222,32 @@ Widget build(BuildContext context) {
     appBar: AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.menu_rounded, color: _dark),
-        onPressed: () => Scaffold.of(context).openDrawer(), // ✅ Ab kaam karega
+      leadingWidth: 100,
+      leading: Row(
+  children: [
+    IconButton(
+      icon: const Icon(
+        Icons.arrow_back_ios_new_rounded,
+        color: _dark,
       ),
+      onPressed: () {
+        context.go('/'); // ✅ context use karo
+      },
+    ),
+
+    Builder(
+      builder: (context) => IconButton(
+        icon: const Icon(
+          Icons.menu_rounded,
+          color: _dark,
+        ),
+        onPressed: () {
+          Scaffold.of(context).openDrawer();
+        },
+      ),
+    ),
+  ],
+),
       title: const Text(
         'AI Assistant',
         style: TextStyle(
@@ -233,6 +256,21 @@ Widget build(BuildContext context) {
           fontSize: 18,
         ),
       ),
+      actions: [
+    Padding(
+      padding: const EdgeInsets.only(right: 12),
+      child: IconButton(
+        onPressed: () {
+          context.push('/profile');
+        },
+        icon: const Icon(
+          Icons.account_circle_rounded,
+          color: _dark,
+          size: 30,
+        ),
+      ),
+    ),
+  ],
     ),
     body: Center(
       child: Column(

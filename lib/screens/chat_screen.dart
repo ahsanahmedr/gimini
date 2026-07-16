@@ -13,9 +13,8 @@ class ChatScreen extends ConsumerStatefulWidget {
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
-
 class _ChatScreenState extends ConsumerState<ChatScreen> {
-  final _scrollController = ScrollController();
+final _scrollController = ScrollController();
 final SpeechToText _speech = SpeechToText();
 
   static const _primary = Color(0xFF1D4E89);
@@ -137,6 +136,7 @@ class _WelcomeHint extends StatelessWidget {
   const _WelcomeHint();
 
   @override
+
   Widget build(BuildContext context) {
     return Center(
       child: Column(
